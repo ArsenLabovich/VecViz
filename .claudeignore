@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+.uv/
+
+# Build outputs
+frontend/dist/
+frontend/.vite/
+backend/dist/
+backend/build/
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+**/*.egg-info/
+
+# ML model files (large binary files, not useful to read)
+models/
+**/*.pkl
+**/*.pt
+**/*.bin
+**/*.safetensors
+
+# Docker volumes / data
+qdrant_data/
+
+# Logs
+**/*.log
+logs/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Git internals
+.git/
+
+# Lock files (large, rarely useful to read directly)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+uv.lock
+poetry.lock
+
+# Test coverage / cache
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
