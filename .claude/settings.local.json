@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker --version)",
+      "Bash(docker compose:*)",
+      "Bash(npm view:*)",
+      "Bash(pip index:*)",
+      "Bash(docker pull:*)",
+      "Bash(docker image:*)",
+      "WebSearch",
+      "Bash(docker info:*)",
+      "Bash(docker context:*)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(Invoke-RestMethod http://localhost:8000/api/health)",
+      "Bash(docker exec:*)",
+      "Bash(docker stats:*)",
+      "Bash(git -C /c/AntigravityProjects/vector_db_visualisation add docker-compose.yml frontend/Dockerfile frontend/Dockerfile.dev frontend/package.json)",
+      "Bash(git commit -m 'fix: healthchecks and npm peer deps for Docker:*)"
+    ]
+  }
+}
