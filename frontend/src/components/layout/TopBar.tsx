@@ -95,7 +95,7 @@ export function TopBar() {
         color: "rgba(255,255,255,0.18)",
         flexShrink: 0,
         userSelect: "none",
-      }}>v0.3test</div>
+      }}>v0.5</div>
     </header>
   );
 }

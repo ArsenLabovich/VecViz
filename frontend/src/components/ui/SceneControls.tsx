@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useSceneStore, type CameraAction } from "@/stores/sceneStore";
+import { useUIStore } from "@/stores/uiStore";
 
 const BTN = {
   width: 34, height: 34,
@@ -105,8 +106,17 @@ function IconReset() {
   </svg>;
 }
 
+function IconAuto() {
+  return <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+    <path d="M6.5 4v2.5l1.5 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>;
+}
+
 export function SceneControls() {
   const setCameraAction = useSceneStore((s) => s.setCameraAction);
+  const autoCamera      = useUIStore((s) => s.autoCameraEnabled);
+  const toggleAutoCamera = useUIStore((s) => s.toggleAutoCamera);
 
   const start = useCallback((a: CameraAction) => setCameraAction(a), [setCameraAction]);
   const stop  = useCallback(() => setCameraAction(null), [setCameraAction]);
@@ -153,6 +163,27 @@ export function SceneControls() {
       <div style={row}>
         <Btn action="move-down"  title="Move down"  onStart={start} onEnd={stop}><IconArrowDown /></Btn>
       </div>
+
+      {/* Auto camera toggle */}
+      <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0" }} />
+      <button
+        title={autoCamera ? "Disable auto camera" : "Enable auto camera"}
+        onClick={toggleAutoCamera}
+        style={{
+          ...BTN,
+          width: "100%",
+          background: autoCamera ? "rgba(59,130,246,0.18)" : "rgba(4,12,28,0.78)",
+          border: `1px solid ${autoCamera ? "rgba(59,130,246,0.4)" : "rgba(255,255,255,0.10)"}`,
+          color: autoCamera ? "rgba(99,160,255,0.9)" : "rgba(255,255,255,0.40)",
+          gap: 5,
+          fontSize: 10,
+          fontFamily: '"JetBrains Mono", monospace',
+          letterSpacing: "0.04em",
+        }}
+      >
+        <IconAuto />
+        AUTO
+      </button>
     </div>
   );
 }

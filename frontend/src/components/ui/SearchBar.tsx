@@ -115,17 +115,20 @@ export function SearchBar() {
           style={{
             height: 28,
             padding: "0 6px",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.10)",
+            background: "#0d1626",
+            border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: 6,
             fontSize: 11,
             fontFamily: '"JetBrains Mono", monospace',
-            color: "rgba(255,255,255,0.6)",
+            color: "rgba(255,255,255,0.7)",
             cursor: "pointer",
             outline: "none",
-          }}
+            colorScheme: "dark",
+          } as React.CSSProperties}
         >
-          {[10, 20, 50, 100, 200, 500].map(v => <option key={v} value={v}>{v}</option>)}
+          {[10, 20, 50, 100, 200, 500].map(v => (
+            <option key={v} value={v} style={{ background: "#0d1626", color: "rgba(255,255,255,0.85)" }}>{v}</option>
+          ))}
         </select>
       </div>
 
