@@ -28,7 +28,7 @@ export const useUIStore = create<UIState>()(
       activeCollection: null,
       uploadProgress: null,
       uploadStage: null,
-      autoCameraEnabled: false,
+      autoCameraEnabled: true,
 
       setTheme: (t) => set({ theme: t }),
       toggleTheme: () => set({ theme: get().theme === "dark" ? "light" : "dark" }),

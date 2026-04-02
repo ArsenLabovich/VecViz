@@ -165,8 +165,8 @@ export function PointCloud({ points }: Props) {
       {/* Points */}
       <points onClick={handleClick} onPointerMove={handlePointerMove} onPointerOut={handlePointerOut}>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" array={positions} count={points.length} itemSize={3} />
-          <bufferAttribute ref={colRef} attach="attributes-color" array={colors} count={points.length} itemSize={3} />
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+          <bufferAttribute ref={colRef} attach="attributes-color" args={[colors, 3]} />
         </bufferGeometry>
         <pointsMaterial ref={matRef} size={POINT_SIZE} vertexColors sizeAttenuation transparent alphaTest={0.05} map={circleTexture} depthWrite={false} />
       </points>

@@ -1,19 +1,29 @@
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSceneStore } from "@/stores/sceneStore";
 import { useUIStore } from "@/stores/uiStore";
 
 const SPEED = 0.5; // units per frame at 60fps
+const USER_PAUSE_MS = 10000;
 
 export function CameraController() {
   const targetRef = useRef<THREE.Vector3 | null>(null);
+  const lastUserInteraction = useRef<number>(0);
   const cameraTarget   = useSceneStore((s) => s.cameraTarget);
   const setCameraTarget = useSceneStore((s) => s.setCameraTarget);
   const cameraAction   = useSceneStore((s) => s.cameraAction);
   const autoCamera     = useUIStore((s) => s.autoCameraEnabled);
 
-  useFrame(({ camera, controls, clock, delta }) => {
+  const { controls } = useThree();
+  useEffect(() => {
+    if (!controls) return;
+    const onStart = () => { lastUserInteraction.current = Date.now(); };
+    (controls as any).addEventListener("start", onStart);
+    return () => (controls as any).removeEventListener("start", onStart);
+  }, [controls]);
+
+  useFrame(({ camera, controls, clock }, delta) => {
     let orbitTarget: THREE.Vector3 | null =
       controls && (controls as any).target ? (controls as any).target : null;
 
@@ -74,6 +84,7 @@ export function CameraController() {
 
     // ── Auto drift animation ─────────────────────────────────────────────────
     if (!autoCamera) return;
+    if (Date.now() - lastUserInteraction.current < USER_PAUSE_MS) return;
 
     const t = clock.getElapsedTime();
 
