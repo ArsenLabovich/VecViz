@@ -10,6 +10,7 @@ export interface SearchResultItem {
 export interface SearchResponse {
   query_point: { x: number; y: number; z: number };
   results: SearchResultItem[];
+  query?: string;
 }
 
 export interface SSEEvent {

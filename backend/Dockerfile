@@ -14,7 +14,7 @@ RUN uv pip install --system --no-cache -r pyproject.toml 2>/dev/null || \
     fastapi uvicorn[standard] pydantic pydantic-settings \
     openai sentence-transformers umap-learn pacmap \
     scikit-learn numpy qdrant-client langchain-text-splitters \
-    tiktoken pypdf tenacity python-multipart httpx
+    tiktoken pypdf tenacity python-multipart httpx yake
 
 # Copy application code
 COPY app/ ./app/

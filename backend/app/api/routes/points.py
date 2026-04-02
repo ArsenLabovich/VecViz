@@ -40,6 +40,7 @@ async def get_points(
             y=p.get("y", 0.0),
             z=p.get("z", 0.0),
             text_preview=p.get("text", "")[:200],
+            label=p.get("label"),
             document_id=p.get("document_id", ""),
             filename=p.get("filename", ""),
             cluster_id=p.get("cluster_id"),

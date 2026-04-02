@@ -4,6 +4,7 @@ export interface PointBrief {
   y: number;
   z: number;
   text_preview: string;
+  label: string | null;
   document_id: string;
   filename: string;
   cluster_id: number | null;

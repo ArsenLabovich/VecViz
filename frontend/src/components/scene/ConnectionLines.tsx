@@ -24,6 +24,7 @@ export function ConnectionLines() {
 
   if (!searchResult) return null;
 
+  const S = 1.8;
   const qp = searchResult.query_point;
   const results = searchResult.results;
 
@@ -32,8 +33,8 @@ export function ConnectionLines() {
       {results.map((r, i) => (
         <Line
           key={r.id}
-          from={[qp.x, qp.y, qp.z]}
-          to={[r.x, r.y, r.z]}
+          from={[qp.x * S, qp.y * S, qp.z * S]}
+          to={[r.x * S, r.y * S, r.z * S]}
           opacity={r.score}
           delay={i * 0.05}
           progressRef={progressRef}

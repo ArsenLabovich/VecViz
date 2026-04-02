@@ -26,8 +26,10 @@ async def search(
     query_vec = await embedder.embed([body.query])
     query_vec = query_vec[0]  # shape (D,)
 
-    # Vector search in Qdrant
+    # Vector search in Qdrant — fetch k, then filter by min_score
     hits = await vector_db.search_vectors(name, query_vec, k=body.k)
+    if body.min_score > 0:
+        hits = [h for h in hits if float(h["score"]) >= body.min_score]
 
     # Project query into 3D space
     query_3d = await reduction.transform_query(name, query_vec)

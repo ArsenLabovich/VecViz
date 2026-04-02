@@ -18,46 +18,113 @@ export function FileUploader() {
   };
 
   return (
-    <div className="p-3">
+    <div style={{ padding: "12px 10px" }}>
+      {/* Section label */}
+      <div style={{
+        fontFamily: '"JetBrains Mono", monospace',
+        fontSize: 9,
+        fontWeight: 500,
+        letterSpacing: "0.14em",
+        textTransform: "uppercase",
+        color: "rgba(255,255,255,0.28)",
+        padding: "0 4px",
+        marginBottom: 8,
+      }}>Upload</div>
+
       <div
-        className={`relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-5 text-center transition cursor-pointer
-          ${dragging ? "border-blue-400 bg-blue-500/10" : "border-white/15 hover:border-white/30"}
-          ${!collection ? "opacity-40 pointer-events-none" : ""}
-        `}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !isUploading && inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 8,
+          border: `1.5px dashed ${dragging ? "rgba(59,130,246,0.6)" : "rgba(255,255,255,0.12)"}`,
+          background: dragging ? "rgba(59,130,246,0.07)" : "rgba(255,255,255,0.02)",
+          padding: isUploading ? "14px 12px" : "18px 12px",
+          cursor: !collection || isUploading ? "default" : "pointer",
+          opacity: !collection ? 0.35 : 1,
+          pointerEvents: !collection ? "none" : "auto",
+          transition: "all 0.2s",
+          minHeight: 80,
+        }}
       >
         <input
           ref={inputRef}
           type="file"
           accept=".txt,.md,.pdf"
-          className="hidden"
+          style={{ display: "none" }}
           onChange={(e) => handleFiles(e.target.files)}
         />
 
         {isUploading ? (
-          <div className="w-full">
-            <p className="text-xs text-white/60 mb-2 capitalize">{uploadStage ?? "processing"}…</p>
-            <div className="h-1.5 w-full rounded-full bg-white/10">
-              <div
-                className="h-1.5 rounded-full bg-blue-500 transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
+          <div style={{ width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", textTransform: "capitalize" }}>
+                {uploadStage ?? "processing"}…
+              </span>
+              <span style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 10,
+                color: "rgba(59,130,246,0.8)",
+              }}>
+                {uploadProgress}%
+              </span>
+            </div>
+            {/* Track */}
+            <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 2, overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${uploadProgress}%`,
+                background: "linear-gradient(90deg, #3b82f6, #6366f1)",
+                borderRadius: 2,
+                transition: "width 0.3s ease",
+                boxShadow: "0 0 8px rgba(59,130,246,0.5)",
+              }} />
             </div>
           </div>
         ) : (
           <>
-            <p className="text-2xl mb-1">📄</p>
-            <p className="text-xs text-white/50">Drop .txt / .md / .pdf</p>
-            <p className="text-xs text-white/25 mt-0.5">or click to browse</p>
+            {/* Upload icon */}
+            <div style={{
+              width: 34, height: 34,
+              borderRadius: 8,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.09)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              marginBottom: 9,
+            }}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 1L7.5 10M7.5 1L4.5 4M7.5 1L10.5 4" stroke="rgba(255,255,255,0.45)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 11V13H13V11" stroke="rgba(255,255,255,0.25)" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.50)", marginBottom: 3 }}>
+              Drop file here
+            </p>
+            <p style={{
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: 9,
+              color: "rgba(255,255,255,0.22)",
+              letterSpacing: "0.05em",
+            }}>
+              .txt · .md · .pdf
+            </p>
           </>
         )}
       </div>
 
       {error && (
-        <p className="mt-2 text-xs text-red-400 text-center">{error}</p>
+        <p style={{
+          marginTop: 6,
+          fontSize: 11,
+          color: "rgba(248,113,113,0.85)",
+          textAlign: "center",
+        }}>{error}</p>
       )}
     </div>
   );

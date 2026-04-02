@@ -11,14 +11,27 @@ export function Sidebar() {
       {sidebarOpen && (
         <motion.aside
           key="sidebar"
-          initial={{ x: -280, opacity: 0 }}
+          initial={{ x: -260, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -280, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="relative z-10 flex w-64 flex-col border-r border-white/8 bg-black/50 backdrop-blur-md overflow-y-auto"
+          exit={{ x: -260, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 340, damping: 32 }}
+          style={{
+            position: "relative",
+            zIndex: 10,
+            width: 240,
+            display: "flex",
+            flexDirection: "column",
+            background: "rgba(3,10,24,0.90)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            borderRight: "1px solid rgba(255,255,255,0.07)",
+            overflowY: "auto",
+            overflowX: "hidden",
+            flexShrink: 0,
+          }}
         >
           <CollectionList />
-          <div className="border-t border-white/8 mt-auto">
+          <div style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
             <FileUploader />
           </div>
         </motion.aside>

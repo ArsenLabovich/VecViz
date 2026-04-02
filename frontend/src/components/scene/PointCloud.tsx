@@ -31,21 +31,27 @@ function makeCircleTexture() {
 
 const circleTexture = makeCircleTexture();
 
-function shortLabel(text: string): string {
-  return text.replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" ");
+function shortLabel(point: PointBrief): string {
+  if (point.label) return point.label;
+  return point.text_preview.replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" ");
 }
 
-function RotatingLabel({ point, index }: { point: PointBrief; index: number }) {
+function RotatingLabel({ point, index, isNeighbor, hasSearch }: {
+  point: PointBrief;
+  index: number;
+  isNeighbor: boolean;
+  hasSearch: boolean;
+}) {
   const ref = useRef<THREE.Group>(null!);
   const phase = (index * 1.618) % (Math.PI * 2);
   const bobAmp = 0.4 + (index % 5) * 0.15;
 
+  const opacity = hasSearch ? (isNeighbor ? 1.0 : 0.03) : 0.75;
+
   useFrame(({ clock, camera }) => {
     const t = clock.getElapsedTime();
     if (!ref.current) return;
-    // Face camera
     ref.current.quaternion.copy(camera.quaternion);
-    // Bob up/down
     ref.current.position.y = point.y * SPREAD + 3.5 + Math.sin(t * 0.7 + phase) * bobAmp;
   });
 
@@ -56,14 +62,14 @@ function RotatingLabel({ point, index }: { point: PointBrief; index: number }) {
         color={point.color || "#aaaaff"}
         anchorX="center"
         anchorY="bottom"
-        fillOpacity={0.75}
+        fillOpacity={opacity}
         outlineWidth={0.12}
         outlineColor="#000000"
-        outlineOpacity={0.6}
+        outlineOpacity={opacity * 0.8}
         maxWidth={20}
         textAlign="center"
       >
-        {shortLabel(point.text_preview)}
+        {shortLabel(point)}
       </Text>
     </group>
   );
@@ -106,18 +112,17 @@ export function PointCloud({ points }: Props) {
     const t = clock.getElapsedTime();
 
     if (matRef.current) {
-      matRef.current.size = POINT_SIZE * (1 + 0.5 * Math.sin(t * 0.6));
-    }
-
-    if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(t * 0.12) * 0.35;
-      groupRef.current.rotation.x = Math.sin(t * 0.08) * 0.18;
-      groupRef.current.rotation.z = Math.sin(t * 0.05) * 0.08;
+      matRef.current.size = POINT_SIZE * (1 + 0.08 * Math.sin(t * 0.25));
     }
 
     const col = colRef.current;
     if (!col || !points.length) return;
     const hasSearch = !!searchNeighborIds;
+
+    if (hasSearch) {
+      console.log("[dim] ACTIVE — col:", !!col, "neighbors:", searchNeighborIds?.size, "total:", points.length);
+    }
+
     const cc = new THREE.Color();
     let changed = false;
 
@@ -127,8 +132,8 @@ export function PointCloud({ points }: Props) {
       const isNeighbor = searchNeighborIds?.has(p.id) ?? false;
 
       if (isHovered || isSelected)       cc.set("#ffffff");
-      else if (hasSearch && isNeighbor)  cc.set(p.color).multiplyScalar(2.5);
-      else if (hasSearch && !isNeighbor) cc.set(p.color).multiplyScalar(0.15);
+      else if (hasSearch && isNeighbor)  cc.set(p.color).multiplyScalar(3.5);
+      else if (hasSearch && !isNeighbor) cc.set(p.color).multiplyScalar(0.05);
       else                               cc.set(p.color || "#4488ff");
 
       const idx = i * 3;
@@ -166,9 +171,15 @@ export function PointCloud({ points }: Props) {
         <pointsMaterial ref={matRef} size={POINT_SIZE} vertexColors sizeAttenuation transparent alphaTest={0.05} map={circleTexture} depthWrite={false} />
       </points>
 
-      {/* Labels — rotating, inside same group */}
+      {/* Labels — rotating, dimmed during search */}
       {points.map((p, i) => (
-        <RotatingLabel key={p.id} point={p} index={i} />
+        <RotatingLabel
+          key={p.id}
+          point={p}
+          index={i}
+          isNeighbor={searchNeighborIds?.has(p.id) ?? false}
+          hasSearch={!!searchNeighborIds}
+        />
       ))}
     </group>
   );

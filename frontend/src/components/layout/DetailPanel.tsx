@@ -5,6 +5,22 @@ import { useUIStore } from "@/stores/uiStore";
 import { pointsApi } from "@/services/points.api";
 import type { PointDetail } from "@/types/point";
 
+const S = {
+  panel: {
+    position: "relative" as const,
+    zIndex: 10,
+    width: 280,
+    display: "flex",
+    flexDirection: "column" as const,
+    background: "rgba(3,10,24,0.92)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    borderLeft: "1px solid rgba(255,255,255,0.07)",
+    overflowY: "auto" as const,
+    flexShrink: 0,
+  },
+};
+
 export function DetailPanel() {
   const selectedId = useSceneStore((s) => s.selectedPointId);
   const setSelected = useSceneStore((s) => s.setSelected);
@@ -13,65 +29,123 @@ export function DetailPanel() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!selectedId || !activeCollection) {
-      setPoint(null);
-      return;
-    }
+    if (!selectedId || !activeCollection) { setPoint(null); return; }
     setLoading(true);
-    pointsApi
-      .get(activeCollection, selectedId)
-      .then(setPoint)
-      .catch(() => setPoint(null))
+    pointsApi.get(activeCollection, selectedId)
+      .then(setPoint).catch(() => setPoint(null))
       .finally(() => setLoading(false));
   }, [selectedId, activeCollection]);
 
-  const isOpen = !!selectedId;
-
   return (
     <AnimatePresence>
-      {isOpen && (
+      {!!selectedId && (
         <motion.aside
           key="detail"
-          initial={{ x: 320, opacity: 0 }}
+          initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: 320, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="relative z-10 flex w-72 flex-col border-l border-white/8 bg-black/60 backdrop-blur-md overflow-y-auto"
+          exit={{ x: 300, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 340, damping: 32 }}
+          style={S.panel}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
-            <span className="text-sm font-semibold text-white/80">Chunk Detail</span>
+          {/* Header */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "12px 14px",
+            borderBottom: "1px solid rgba(255,255,255,0.07)",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: "#3b82f6",
+                boxShadow: "0 0 6px rgba(59,130,246,0.7)",
+              }} />
+              <span style={{
+                fontSize: 12, fontWeight: 600,
+                letterSpacing: "0.03em",
+                color: "rgba(255,255,255,0.75)",
+              }}>Chunk Detail</span>
+            </div>
             <button
               onClick={() => setSelected(null)}
-              className="text-white/30 hover:text-white/70 transition"
+              style={{
+                width: 22, height: 22,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.09)",
+                borderRadius: 5,
+                color: "rgba(255,255,255,0.28)",
+                cursor: "pointer",
+                fontSize: 11,
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = "rgba(255,255,255,0.28)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)";
+              }}
             >✕</button>
           </div>
 
-          <div className="flex-1 p-4">
+          {/* Body */}
+          <div style={{ flex: 1, padding: "14px", overflowY: "auto" }}>
             {loading && (
-              <div className="space-y-2">
-                {[80, 100, 60, 90].map((w, i) => (
-                  <div key={i} className="h-3 rounded bg-white/10 animate-pulse" style={{ width: `${w}%` }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[90, 100, 75, 88, 60].map((w, i) => (
+                  <div key={i} className="skeleton" style={{ height: 12, width: `${w}%` }} />
                 ))}
               </div>
             )}
 
             {point && !loading && (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {/* Text content */}
                 <div>
-                  <p className="text-xs text-white/30 mb-1 uppercase tracking-wider">Text</p>
-                  <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap break-words">
+                  <div style={{
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.25)",
+                    marginBottom: 8,
+                  }}>Content</div>
+                  <p style={{
+                    fontSize: 12.5,
+                    lineHeight: 1.65,
+                    color: "rgba(255,255,255,0.72)",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}>
                     {point.text}
                   </p>
                 </div>
 
-                <div className="border-t border-white/8 pt-3 space-y-1.5 text-xs text-white/40">
-                  <Row label="Source" value={point.filename} />
-                  <Row label="Chunk" value={`#${point.chunk_index}`} />
-                  <Row label="Tokens" value={String(point.token_count)} />
+                {/* Metadata */}
+                <div style={{
+                  borderTop: "1px solid rgba(255,255,255,0.07)",
+                  paddingTop: 12,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 7,
+                }}>
+                  <div style={{
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.25)",
+                    marginBottom: 2,
+                  }}>Metadata</div>
+                  <MetaRow label="Source" value={point.filename} />
+                  <MetaRow label="Chunk" value={`#${point.chunk_index}`} mono />
+                  <MetaRow label="Tokens" value={String(point.token_count)} mono />
                   {point.cluster_label && (
-                    <Row label="Cluster" value={point.cluster_label} />
+                    <MetaRow label="Cluster" value={point.cluster_label} />
                   )}
-                  <Row label="Position" value={`(${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${point.z.toFixed(1)})`} />
+                  <MetaRow
+                    label="XYZ"
+                    value={`${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${point.z.toFixed(1)}`}
+                    mono
+                  />
                 </div>
               </div>
             )}
@@ -82,11 +156,23 @@ export function DetailPanel() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function MetaRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex gap-2">
-      <span className="shrink-0 text-white/25">{label}:</span>
-      <span className="text-white/50 truncate">{value}</span>
+    <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+      <span style={{
+        fontFamily: '"JetBrains Mono", monospace',
+        fontSize: 10, flexShrink: 0,
+        color: "rgba(255,255,255,0.22)",
+        width: 46,
+      }}>{label}</span>
+      <span style={{
+        fontSize: mono ? 10.5 : 12,
+        fontFamily: mono ? '"JetBrains Mono", monospace' : '"Outfit", sans-serif',
+        color: "rgba(255,255,255,0.55)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}>{value}</span>
     </div>
   );
 }

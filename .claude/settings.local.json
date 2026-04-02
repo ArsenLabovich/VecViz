@@ -16,7 +16,11 @@
       "Bash(docker exec:*)",
       "Bash(docker stats:*)",
       "Bash(git -C /c/AntigravityProjects/vector_db_visualisation add docker-compose.yml frontend/Dockerfile frontend/Dockerfile.dev frontend/package.json)",
-      "Bash(git commit -m 'fix: healthchecks and npm peer deps for Docker:*)"
+      "Bash(git commit -m 'fix: healthchecks and npm peer deps for Docker:*)",
+      "Bash(curl -s \"http://localhost/api/collections/test1/points?limit=3\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p['x'],p['y'],p['z']\\) for p in d['points']]\")",
+      "Bash(curl -s \"http://localhost/api/collections/test1/points?limit=1\")",
+      "Bash(curl -s -X POST http://localhost:8000/api/collections/testcollection/search -H \"Content-Type: application/json\" -d '{\"query\":\"magic\",\"k\":3}')"
     ]
   }
 }

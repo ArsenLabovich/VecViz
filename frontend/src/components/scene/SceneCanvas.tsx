@@ -35,7 +35,10 @@ function AutoFitCamera({ points }: { points: PointBrief[] }) {
     const S = 1.8;
     let cx = 0, cy = 0, cz = 0;
     for (const p of points) { cx += p.x * S; cy += p.y * S; cz += p.z * S; }
+    // Guard: points.length already checked above, but be explicit
+    if (points.length === 0) return;
     cx /= points.length; cy /= points.length; cz /= points.length;
+    if (isNaN(cx) || isNaN(cy) || isNaN(cz)) return;
 
     let maxDist = 1;
     for (const p of points) {

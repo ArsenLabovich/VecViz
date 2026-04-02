@@ -283,13 +283,13 @@ async def search_vectors(
     k: int = 10,
 ) -> list[dict[str, Any]]:
     client = _client()
-    hits = await client.search(
-        collection_name,
-        query_vector=query_vector.astype(np.float32).tolist(),
+    result = await client.query_points(
+        collection_name=collection_name,
+        query=query_vector.astype(np.float32).tolist(),
         limit=k,
         with_payload=True,
     )
-    return [{"id": str(h.id), "score": h.score, **(h.payload or {})} for h in hits]
+    return [{"id": str(h.id), "score": h.score, **(h.payload or {})} for h in result.points]
 
 
 async def count_points(collection_name: str) -> int:

@@ -18,6 +18,7 @@ from app.models.schemas import DocumentListResponse, DocumentInfo, IngestRespons
 from app.services import vector_db, reduction, clustering
 from app.services.chunking import chunk_document
 from app.services.embedding import BaseEmbedder
+from app.services.labeling import label_chunk
 from app.api.routes.status import publish
 
 logger = logging.getLogger("vecviz")
@@ -54,6 +55,7 @@ async def _ingest_pipeline(
     payloads = [
         {
             "text": c.text,
+            "label": label_chunk(c.text),
             "document_id": document_id,
             "filename": filename,
             "chunk_index": c.chunk_index,

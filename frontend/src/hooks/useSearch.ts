@@ -7,8 +7,8 @@ export function useSearch(collection: string | null) {
   const clearSearch = useSceneStore((s) => s.clearSearch);
 
   return useMutation({
-    mutationFn: ({ query, k }: { query: string; k?: number }) =>
-      searchApi.search(collection!, query, k),
+    mutationFn: ({ query, k, min_score }: { query: string; k?: number; min_score?: number }) =>
+      searchApi.search(collection!, query, k, min_score),
     onSuccess: (data) => setSearchResult(data),
     onError: () => clearSearch(),
     onMutate: () => clearSearch(),
