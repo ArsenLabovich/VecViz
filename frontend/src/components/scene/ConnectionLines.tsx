@@ -52,32 +52,27 @@ interface LineProps {
 }
 
 function Line({ from, to, opacity, delay, progressRef }: LineProps) {
-  const ref = useRef<THREE.Line>(null!);
+  const matRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry().setFromPoints([
+    return new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(...from),
       new THREE.Vector3(...to),
     ]);
-    return geo;
   }, [from, to]);
 
   useFrame(() => {
-    const line = ref.current;
-    if (!line) return;
-    const mat = line.material as THREE.LineBasicMaterial;
+    const mat = matRef.current;
+    if (!mat) return;
     const progress = Math.max(0, progressRef.current - delay);
     mat.opacity = Math.min(opacity * 0.8, progress * 2) * opacity;
   });
 
-  return (
-    <line ref={ref as any} geometry={geometry}>
-      <lineBasicMaterial
-        color="#88ccff"
-        transparent
-        opacity={0}
-        linewidth={1}
-      />
-    </line>
-  );
+  const lineObj = useMemo(() => {
+    const mat = new THREE.LineBasicMaterial({ color: "#88ccff", transparent: true, opacity: 0 });
+    matRef.current = mat;
+    return new THREE.Line(geometry, mat);
+  }, [geometry]);
+
+  return <primitive object={lineObj} />;
 }

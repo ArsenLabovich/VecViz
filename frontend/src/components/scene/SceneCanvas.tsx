@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Stars, Preload, AdaptiveDpr } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
@@ -11,6 +11,7 @@ import { ClusterLabels } from "./ClusterLabels";
 import { CameraController } from "./CameraController";
 import { usePoints, useClusters } from "@/hooks/usePoints";
 import { useUIStore } from "@/stores/uiStore";
+import type { PointBrief } from "@/types/point";
 
 function SceneFallback({ error }: { error: Error }) {
   return (
@@ -21,6 +22,40 @@ function SceneFallback({ error }: { error: Error }) {
       </div>
     </div>
   );
+}
+
+function AutoFitCamera({ points }: { points: PointBrief[] }) {
+  const { camera, controls } = useThree();
+  const fittedRef = useRef(0);
+
+  useEffect(() => {
+    if (!points.length || fittedRef.current === points.length) return;
+    fittedRef.current = points.length;
+
+    const S = 1.8;
+    let cx = 0, cy = 0, cz = 0;
+    for (const p of points) { cx += p.x * S; cy += p.y * S; cz += p.z * S; }
+    cx /= points.length; cy /= points.length; cz /= points.length;
+
+    let maxDist = 1;
+    for (const p of points) {
+      const d = Math.sqrt((p.x*S - cx) ** 2 + (p.y*S - cy) ** 2 + (p.z*S - cz) ** 2);
+      if (d > maxDist) maxDist = d;
+    }
+
+    const fitDist = Math.max(maxDist * 2.8, 40);
+    // Set OrbitControls target first, then position camera
+    if (controls && (controls as any).target) {
+      (controls as any).target.set(cx, cy, cz);
+    }
+    camera.position.set(cx, cy, cz + fitDist);
+    camera.lookAt(cx, cy, cz);
+    if (controls && (controls as any).update) {
+      (controls as any).update();
+    }
+  }, [points.length, camera, controls]);
+
+  return null;
 }
 
 function SceneContents() {
@@ -37,6 +72,7 @@ function SceneContents() {
 
       <Stars radius={200} depth={60} count={3000} factor={4} fade speed={0.5} />
 
+      <AutoFitCamera points={points} />
       <PointCloud points={points} />
       <SearchPoint />
       <ConnectionLines />
@@ -48,9 +84,9 @@ function SceneContents() {
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={0.6}
-        zoomSpeed={0.8}
-        minDistance={5}
-        maxDistance={300}
+        zoomSpeed={2.5}
+        minDistance={1}
+        maxDistance={1000}
       />
 
       <AdaptiveDpr pixelated />
@@ -73,9 +109,9 @@ export function SceneCanvas() {
     <ErrorBoundary FallbackComponent={SceneFallback}>
       <Canvas
         camera={{ position: [0, 0, 120], fov: 60, near: 0.1, far: 2000 }}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
         style={{ background: "#050510" }}
-        dpr={[1, 2]}
+        dpr={Math.min(window.devicePixelRatio, 3)}
       >
         <Suspense fallback={null}>
           <fog attach="fog" args={["#050510", 150, 500]} />

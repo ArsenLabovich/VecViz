@@ -14,27 +14,28 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
-    ScrollRequest,
     UpdateStatus,
-    PayloadSchemaType,
 )
 
 from app.config import settings
 
 logger = logging.getLogger("vecviz")
 
-# Metadata collection that stores per-collection config
 META_COLLECTION = "_vecviz_meta"
+
+_qdrant_client: AsyncQdrantClient | None = None
 
 
 def _client() -> AsyncQdrantClient:
-    return AsyncQdrantClient(host=settings.qdrant_host, port=settings.qdrant_port)
+    global _qdrant_client
+    if _qdrant_client is None:
+        _qdrant_client = AsyncQdrantClient(host=settings.qdrant_host, port=settings.qdrant_port)
+    return _qdrant_client
 
 
 async def health_check() -> bool:
-    async with _client() as client:
-        info = await client.get_collections()
-        return info is not None
+    info = await _client().get_collections()
+    return info is not None
 
 
 # ── Collection helpers ────────────────────────────────────────────────────────
@@ -49,26 +50,26 @@ async def ensure_meta_collection(client: AsyncQdrantClient) -> None:
 
 
 async def list_collections() -> list[dict[str, Any]]:
-    async with _client() as client:
-        await ensure_meta_collection(client)
-        result = await client.get_collections()
-        names = [c.name for c in result.collections if not c.name.startswith("_")]
-        out = []
-        for name in names:
-            info = await client.get_collection(name)
-            meta = await _get_meta(client, name)
-            out.append(
-                {
-                    "name": name,
-                    "description": meta.get("description", ""),
-                    "point_count": info.points_count or 0,
-                    "document_count": meta.get("document_count", 0),
-                    "reduction_method": meta.get("reduction_method", "umap"),
-                    "umap_ready": meta.get("umap_ready", False),
-                    "created_at": meta.get("created_at", ""),
-                }
-            )
-        return out
+    client = _client()
+    await ensure_meta_collection(client)
+    result = await client.get_collections()
+    names = [c.name for c in result.collections if not c.name.startswith("_")]
+    out = []
+    for name in names:
+        info = await client.get_collection(name)
+        meta = await _get_meta(client, name)
+        out.append(
+            {
+                "name": name,
+                "description": meta.get("description", ""),
+                "point_count": info.points_count or 0,
+                "document_count": meta.get("document_count", 0),
+                "reduction_method": meta.get("reduction_method", "umap"),
+                "umap_ready": meta.get("umap_ready", False),
+                "created_at": meta.get("created_at", ""),
+            }
+        )
+    return out
 
 
 async def create_collection(
@@ -78,42 +79,41 @@ async def create_collection(
     vector_size: int,
     created_at: str,
 ) -> None:
-    async with _client() as client:
-        await client.create_collection(
-            name,
-            vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-        )
-        await ensure_meta_collection(client)
-        await _set_meta(
-            client,
-            name,
-            {
-                "description": description,
-                "reduction_method": reduction_method,
-                "vector_size": vector_size,
-                "document_count": 0,
-                "umap_ready": False,
-                "created_at": created_at,
-            },
-        )
+    client = _client()
+    await client.create_collection(
+        name,
+        vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
+    )
+    await ensure_meta_collection(client)
+    await _set_meta(
+        client,
+        name,
+        {
+            "description": description,
+            "reduction_method": reduction_method,
+            "vector_size": vector_size,
+            "document_count": 0,
+            "umap_ready": False,
+            "created_at": created_at,
+        },
+    )
 
 
 async def delete_collection(name: str) -> None:
-    async with _client() as client:
-        await client.delete_collection(name)
-        # Remove meta entry
-        await client.delete(
-            META_COLLECTION,
-            points_selector=Filter(
-                must=[FieldCondition(key="collection_name", match=MatchValue(value=name))]
-            ),
-        )
+    client = _client()
+    await client.delete_collection(name)
+    await client.delete(
+        META_COLLECTION,
+        points_selector=Filter(
+            must=[FieldCondition(key="collection_name", match=MatchValue(value=name))]
+        ),
+    )
 
 
 async def collection_exists(name: str) -> bool:
-    async with _client() as client:
-        existing = {c.name for c in (await client.get_collections()).collections}
-        return name in existing
+    client = _client()
+    existing = {c.name for c in (await client.get_collections()).collections}
+    return name in existing
 
 
 # ── Meta helpers ──────────────────────────────────────────────────────────────
@@ -140,14 +140,13 @@ async def _get_meta(client: AsyncQdrantClient, collection_name: str) -> dict[str
 async def _set_meta(
     client: AsyncQdrantClient, collection_name: str, data: dict[str, Any]
 ) -> None:
-    # Upsert with deterministic ID based on collection name
     point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"meta:{collection_name}"))
     await client.upsert(
         META_COLLECTION,
         points=[
             PointStruct(
                 id=point_id,
-                vector=[0.0],  # Dummy vector — meta collection
+                vector=[0.0],
                 payload={"collection_name": collection_name, **data},
             )
         ],
@@ -155,23 +154,23 @@ async def _set_meta(
 
 
 async def update_meta(collection_name: str, updates: dict[str, Any]) -> None:
-    async with _client() as client:
-        await ensure_meta_collection(client)
-        existing = await _get_meta(client, collection_name)
-        merged = {**existing, **updates}
-        await _set_meta(client, collection_name, merged)
+    client = _client()
+    await ensure_meta_collection(client)
+    existing = await _get_meta(client, collection_name)
+    merged = {**existing, **updates}
+    await _set_meta(client, collection_name, merged)
 
 
 async def get_meta(collection_name: str) -> dict[str, Any]:
-    async with _client() as client:
-        return await _get_meta(client, collection_name)
+    client = _client()
+    return await _get_meta(client, collection_name)
 
 
 # ── Points CRUD ───────────────────────────────────────────────────────────────
 
 async def upsert_points(
     collection_name: str,
-    vectors: np.ndarray,  # shape (N, D), float32
+    vectors: np.ndarray,
     payloads: list[dict[str, Any]],
     ids: list[str] | None = None,
 ) -> list[str]:
@@ -187,9 +186,8 @@ async def upsert_points(
         for pid, vec, payload in zip(ids, vectors, payloads)
     ]
 
-    async with _client() as client:
-        await client.upsert(collection_name, points=points)
-
+    client = _client()
+    await client.upsert(collection_name, points=points)
     return ids
 
 
@@ -201,23 +199,23 @@ async def scroll_all_vectors(
     ids: list[str] = []
     vectors: list[list[float]] = []
     offset = None
+    client = _client()
 
-    async with _client() as client:
-        while True:
-            result, next_offset = await client.scroll(
-                collection_name,
-                limit=batch_size,
-                offset=offset,
-                with_vectors=True,
-                with_payload=False,
-            )
-            for point in result:
-                ids.append(str(point.id))
-                vectors.append(point.vector)  # type: ignore[arg-type]
+    while True:
+        result, next_offset = await client.scroll(
+            collection_name,
+            limit=batch_size,
+            offset=offset,
+            with_vectors=True,
+            with_payload=False,
+        )
+        for point in result:
+            ids.append(str(point.id))
+            vectors.append(point.vector)  # type: ignore[arg-type]
 
-            if next_offset is None:
-                break
-            offset = next_offset
+        if next_offset is None:
+            break
+        offset = next_offset
 
     arr = np.array(vectors, dtype=np.float32) if vectors else np.empty((0, 0), dtype=np.float32)
     return ids, arr
@@ -225,19 +223,18 @@ async def scroll_all_vectors(
 
 async def update_payloads_batch(
     collection_name: str,
-    updates: list[tuple[str, dict[str, Any]]],  # [(id, payload_patch), ...]
+    updates: list[tuple[str, dict[str, Any]]],
     batch_size: int = 256,
 ) -> None:
-    """Patch payloads for many points efficiently."""
-    async with _client() as client:
-        for i in range(0, len(updates), batch_size):
-            batch = updates[i : i + batch_size]
-            for point_id, patch in batch:
-                await client.set_payload(
-                    collection_name,
-                    payload=patch,
-                    points=[point_id],
-                )
+    client = _client()
+    for i in range(0, len(updates), batch_size):
+        batch = updates[i : i + batch_size]
+        for point_id, patch in batch:
+            await client.set_payload(
+                collection_name,
+                payload=patch,
+                points=[point_id],
+            )
 
 
 async def get_points_page(
@@ -254,27 +251,27 @@ async def get_points_page(
         filters.append(FieldCondition(key="document_id", match=MatchValue(value=document_id)))
 
     scroll_filter = Filter(must=filters) if filters else None
+    client = _client()
 
-    async with _client() as client:
-        result, _ = await client.scroll(
-            collection_name,
-            scroll_filter=scroll_filter,
-            limit=limit,
-            offset=offset,
-            with_payload=True,
-            with_vectors=False,
-        )
+    result, _ = await client.scroll(
+        collection_name,
+        scroll_filter=scroll_filter,
+        limit=limit,
+        offset=offset,
+        with_payload=True,
+        with_vectors=False,
+    )
     return [{"id": str(p.id), **(p.payload or {})} for p in result]
 
 
 async def get_point_by_id(collection_name: str, point_id: str) -> dict[str, Any] | None:
-    async with _client() as client:
-        result = await client.retrieve(
-            collection_name,
-            ids=[point_id],
-            with_payload=True,
-            with_vectors=False,
-        )
+    client = _client()
+    result = await client.retrieve(
+        collection_name,
+        ids=[point_id],
+        with_payload=True,
+        with_vectors=False,
+    )
     if result:
         return {"id": str(result[0].id), **(result[0].payload or {})}
     return None
@@ -285,20 +282,20 @@ async def search_vectors(
     query_vector: np.ndarray,
     k: int = 10,
 ) -> list[dict[str, Any]]:
-    async with _client() as client:
-        hits = await client.search(
-            collection_name,
-            query_vector=query_vector.astype(np.float32).tolist(),
-            limit=k,
-            with_payload=True,
-        )
+    client = _client()
+    hits = await client.search(
+        collection_name,
+        query_vector=query_vector.astype(np.float32).tolist(),
+        limit=k,
+        with_payload=True,
+    )
     return [{"id": str(h.id), "score": h.score, **(h.payload or {})} for h in hits]
 
 
 async def count_points(collection_name: str) -> int:
-    async with _client() as client:
-        info = await client.get_collection(collection_name)
-        return info.points_count or 0
+    client = _client()
+    info = await client.get_collection(collection_name)
+    return info.points_count or 0
 
 
 async def get_documents_in_collection(collection_name: str) -> list[dict[str, Any]]:
