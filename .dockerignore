@@ -2,7 +2,6 @@ node_modules
 **/__pycache__
 **/*.pyc
 .env
-/models/
 qdrant_data/
 .git
 docs/
