@@ -2,11 +2,14 @@ import { useState, useCallback } from "react";
 import { uploadApi } from "@/services/upload.api";
 import { useUIStore } from "@/stores/uiStore";
 import { useInvalidatePoints } from "./usePoints";
+import { useQueryClient } from "@tanstack/react-query";
+import { COLLECTIONS_KEY } from "./useCollections";
 
 export function useUpload(collection: string | null) {
   const [error, setError] = useState<string | null>(null);
   const setProgress = useUIStore((s) => s.setUploadProgress);
   const invalidate = useInvalidatePoints();
+  const qc = useQueryClient();
 
   const upload = useCallback(
     async (file: File, chunkSize = 512, chunkOverlap = 50) => {
@@ -32,6 +35,7 @@ export function useUpload(collection: string | null) {
               setProgress(null, null);
               es.close();
               invalidate(collection);
+              qc.invalidateQueries({ queryKey: COLLECTIONS_KEY });
               resolve();
             } else if (event === "error") {
               setProgress(null, null);
