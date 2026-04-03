@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     # Qdrant
     qdrant_host: str = Field(default="localhost")
     qdrant_port: int = Field(default=6333)
+    qdrant_url: str = Field(default="")
+    qdrant_api_key: str = Field(default="")
 
     # Embeddings
     openai_api_key: str = Field(default="")
