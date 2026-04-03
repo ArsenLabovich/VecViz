@@ -14,6 +14,7 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    PayloadSchemaType,
 )
 
 from app.config import settings
@@ -55,6 +56,13 @@ async def ensure_meta_collection(client: AsyncQdrantClient) -> None:
             META_COLLECTION,
             vectors_config=VectorParams(size=1, distance=Distance.COSINE),
         )
+    # Qdrant Cloud requires a payload index to filter by keyword fields.
+    # create_payload_index is idempotent — safe to call on every startup.
+    await client.create_payload_index(
+        META_COLLECTION,
+        field_name="collection_name",
+        field_schema=PayloadSchemaType.KEYWORD,
+    )
 
 
 async def list_collections() -> list[dict[str, Any]]:
