@@ -1,7 +1,6 @@
 """Document → text chunks pipeline. Supports .txt, .md, .pdf"""
 from __future__ import annotations
 
-import io
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -33,10 +32,11 @@ def _extract_text(content: bytes, filename: str) -> str:
     ext = filename.rsplit(".", 1)[-1].lower()
     if ext == "pdf":
         try:
-            from pypdf import PdfReader
+            import fitz  # PyMuPDF
 
-            reader = PdfReader(io.BytesIO(content))
-            pages = [p.extract_text() or "" for p in reader.pages]
+            doc = fitz.open(stream=content, filetype="pdf")
+            pages = [page.get_text() for page in doc]
+            doc.close()
             return "\n\n".join(pages)
         except Exception as e:
             logger.warning("PDF extraction failed for %s: %s", filename, e)
