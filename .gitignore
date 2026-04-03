@@ -20,7 +20,7 @@ dist/
 build/
 
 # ML models (large files)
-models/
+/models/
 *.pkl
 *.pt
 *.bin
