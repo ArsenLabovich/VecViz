@@ -14,7 +14,6 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
-    UpdateStatus,
 )
 
 from app.config import settings

@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -19,7 +18,7 @@ from typing import Any
 
 import numpy as np
 
-from app.config import settings, ReductionMethod
+from app.config import settings
 
 logger = logging.getLogger("vecviz")
 

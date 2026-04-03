@@ -7,8 +7,7 @@ from app.models.schemas import (
     ClusterRecomputeRequest, ClusterRecomputeResponse,
 )
 from app.services import vector_db, clustering, labeling
-from app.services.clustering import build_cluster_info, color_for_cluster
-from app.api.routes.status import publish
+from app.services.clustering import color_for_cluster
 import numpy as np
 
 router = APIRouter()

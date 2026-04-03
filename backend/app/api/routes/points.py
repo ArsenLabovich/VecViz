@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from app.core.exceptions import CollectionNotFound, PointNotFound, ReductionNotReady
+from app.core.exceptions import CollectionNotFound, PointNotFound
 from app.models.schemas import (
     PointBrief, PointDetail, PointsResponse, RefitRequest,
 )

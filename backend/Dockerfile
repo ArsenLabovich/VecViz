@@ -6,7 +6,8 @@ RUN pip install --no-cache-dir uv
 
 # ── Heavy ML deps (cached as long as these versions don't change) ─────────────
 RUN uv pip install --system --no-cache \
-    torch --index-url https://download.pytorch.org/whl/cpu \
+    torch --index-url https://download.pytorch.org/whl/cpu
+RUN uv pip install --system --no-cache \
     sentence-transformers>=5.3.0 \
     umap-learn>=0.5.11 \
     numba \

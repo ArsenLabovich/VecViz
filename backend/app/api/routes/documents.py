@@ -3,7 +3,6 @@ Returns 202 immediately; progress streamed via SSE (/collections/{name}/status).
 """
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 import uuid
@@ -75,7 +74,7 @@ async def _ingest_pipeline(
     ]
 
     await publish(collection_name, "progress", {"stage": "storing", "percent": 50, "message": "Storing vectors in Qdrant"})
-    point_ids = await vector_db.upsert_points(collection_name, vectors, payloads)
+    await vector_db.upsert_points(collection_name, vectors, payloads)
 
     # Update document count in meta
     meta = await vector_db.get_meta(collection_name)

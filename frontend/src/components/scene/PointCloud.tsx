@@ -119,10 +119,6 @@ export function PointCloud({ points }: Props) {
     if (!col || !points.length) return;
     const hasSearch = !!searchNeighborIds;
 
-    if (hasSearch) {
-      console.log("[dim] ACTIVE — col:", !!col, "neighbors:", searchNeighborIds?.size, "total:", points.length);
-    }
-
     const cc = new THREE.Color();
     let changed = false;
 

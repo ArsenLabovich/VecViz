@@ -128,11 +128,10 @@ export function SearchPoint() {
     let cx = 0, cy = 0, cz = 0;
     pts.forEach(r => { cx += r.x * S; cy += r.y * S; cz += r.z * S; });
     cx /= pts.length; cy /= pts.length; cz /= pts.length;
-    console.log("[SearchPoint] fly-to centroid:", [cx, cy, cz]);
     setCameraTarget([cx, cy, cz]);
   }, [searchResult, setCameraTarget]);
 
-  useFrame(() => {
+  useFrame((state) => {
     const mesh = meshRef.current;
     if (!mesh) return;
 
@@ -161,7 +160,7 @@ export function SearchPoint() {
       setAnimating(false);
     }
 
-    mesh.scale.setScalar(1 + Math.sin(Date.now() * 0.005) * 0.25);
+    mesh.scale.setScalar(1 + Math.sin(state.clock.getElapsedTime() * 4) * 0.25);
   });
 
   if (!searchResult) return null;

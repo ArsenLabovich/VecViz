@@ -18,10 +18,6 @@ interface SceneState {
   searchResult: SearchResponse | null;
   isSearchAnimating: boolean;
 
-  // Filters
-  activeClusterId: number | null;
-  activeDocumentId: string | null;
-
   // Camera target (for fly-to)
   cameraTarget: [number, number, number] | null;
 
@@ -32,8 +28,6 @@ interface SceneState {
   setSelected: (id: string | null) => void;
   setSearchResult: (result: SearchResponse | null) => void;
   setSearchAnimating: (v: boolean) => void;
-  setActiveCluster: (id: number | null) => void;
-  setActiveDocument: (id: string | null) => void;
   setCameraTarget: (target: [number, number, number] | null) => void;
   setCameraAction: (action: CameraAction) => void;
   clearSearch: () => void;
@@ -44,8 +38,6 @@ export const useSceneStore = create<SceneState>((set) => ({
   selectedPointId: null,
   searchResult: null,
   isSearchAnimating: false,
-  activeClusterId: null,
-  activeDocumentId: null,
   cameraTarget: null,
   cameraAction: null,
 
@@ -53,8 +45,6 @@ export const useSceneStore = create<SceneState>((set) => ({
   setSelected: (id) => set({ selectedPointId: id }),
   setSearchResult: (result) => set({ searchResult: result, isSearchAnimating: !!result }),
   setSearchAnimating: (v) => set({ isSearchAnimating: v }),
-  setActiveCluster: (id) => set({ activeClusterId: id }),
-  setActiveDocument: (id) => set({ activeDocumentId: id }),
   setCameraTarget: (target) => set({ cameraTarget: target }),
   setCameraAction: (action) => set({ cameraAction: action }),
   clearSearch: () => set({ searchResult: null, isSearchAnimating: false }),

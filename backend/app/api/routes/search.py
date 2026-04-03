@@ -5,8 +5,6 @@ from app.services import vector_db, reduction
 from app.api.deps import get_embedder_dep
 from fastapi import Depends
 from app.services.embedding import BaseEmbedder
-import numpy as np
-
 router = APIRouter()
 
 

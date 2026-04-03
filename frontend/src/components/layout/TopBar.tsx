@@ -2,8 +2,6 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { useUIStore } from "@/stores/uiStore";
 
 export function TopBar() {
-  const toggle = useUIStore((s) => s.toggleTheme);
-  const theme = useUIStore((s) => s.theme);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 
